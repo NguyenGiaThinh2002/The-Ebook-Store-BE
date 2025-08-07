@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("JP_DATABASE_URL")
+}
+
+enum point_type {
+  earn
+  spend
+}
+
+model users {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  region     String   
+  created_at DateTime @default(now())
+
+  @@map("users")
+}
+
+model ebooks {
+  id          Int      @id @default(autoincrement())
+  title       String
+  author      String?
+  price       Decimal  @db.Decimal(10, 2)
+  point_price Int?
+  file_url    String
+  imgUrl      String
+
+  @@map("ebooks")
+}
+
+model purchases {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  ebook_id        Int
+  purchased_at    DateTime @default(now())
+  paid_with_point Boolean  @default(false)
+  payment_method  String   @default("credit_card")
+
+  @@map("purchases")
+}
+
+model points {
+  user_id Int    @id
+  balance Int    @default(0)
+
+  @@map("points")
+}
+
+model point_transactions {
+  id          Int        @id @default(autoincrement())
+  user_id     Int
+  amount      Int
+  type        point_type
+  description String?
+  created_at  DateTime   @default(now())
+
+  @@map("point_transactions")
+}
