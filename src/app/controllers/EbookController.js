@@ -1,40 +1,9 @@
 const { PrismaClient } = require("@prisma/client");
-// const prisma = new PrismaClient();
 require("dotenv").config();
 const { getPrismaClient } = require("../../lib/prismaClients");
+const { generateToken } = require("../utils/jwt");
 
 class EBookController {
-  async createUser(req, res) {
-    try {
-      const { name, email, password } = req.body;
-      const region = req.headers.region || "japan";
-      const prisma = getPrismaClient(region);
-      const existingUser = await prisma.users.findUnique({ where: { email } });
-
-      if (existingUser) {
-        res
-          .status(400)
-          .json({ message: "❌ Email already in use", error: err.message });
-      }
-
-      const newUser = await prisma.users.create({
-        data: {
-          name,
-          email,
-          password, // ⚠️ Hash passwords in production
-          region,
-        },
-      });
-
-      console.log("✅ User created:", newUser);
-      return res.status(201).json(newUser);
-    } catch (error) {
-      res
-        .status(400)
-        .json({ message: "❌ Failed to create user", error: err.message });
-    }
-  }
-
   // Add this function inside the same controller class or module
   async loginUser(req, res) {
     try {
@@ -66,10 +35,13 @@ class EBookController {
         return res.status(401).json({ message: "❌ Invalid credentials" });
       }
 
+      const token = generateToken(user);
+
       // ✅ Successful login
       return res.status(200).json({
         message: "✅ Login successful",
         user,
+        token,
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -79,11 +51,46 @@ class EBookController {
     }
   }
 
+  async createUser(req, res) {
+    try {
+      const { name, email, password, region } = req.body;
+      // const region = req.headers.region || "japan";
+      let userRegion = region.toLowerCase();
+      const prisma = getPrismaClient(userRegion);
+      const existingUser = await prisma.users.findUnique({ where: { email } });
+
+      if (existingUser) {
+        res
+          .status(400)
+          .json({ message: "❌ Email already in use", error: err.message });
+      }
+
+      const newUser = await prisma.users.create({
+        data: {
+          name,
+          email,
+          password, // ⚠️ Hash passwords in production
+          region: userRegion,
+        },
+      });
+
+      console.log("✅ User created:", newUser);
+      return res.status(201).json(newUser);
+    } catch (error) {
+      res
+        .status(400)
+        .json({ message: "❌ Failed to create user", error: err.message });
+    }
+  }
+
   async getUserBalance(req, res) {
     try {
       const { id } = req.params;
-      console.log("id", id);
+      // console.log("id", id);
       const region = req.headers.region || "japan";
+      if (region === "vietnam") {
+        return res.status(200).json({ balance: 0 });
+      }
       const prisma = getPrismaClient(region);
       const pointRecord = await prisma.points.findUnique({
         where: {
