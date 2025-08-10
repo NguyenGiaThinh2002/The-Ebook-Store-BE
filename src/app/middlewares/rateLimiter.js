@@ -3,7 +3,7 @@ const { ipKeyGenerator } = require("express-rate-limit"); // <-- import helper
 
 const publicLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 35,
   message: "Too many requests. Try again later.",
 });
 

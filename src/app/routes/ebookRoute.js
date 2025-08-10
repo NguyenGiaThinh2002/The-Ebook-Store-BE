@@ -10,7 +10,7 @@ const router = express.Router();
 // /ebooks
 
 router.post("/createUser", signupLimiter, eBookController.createUser); //
-router.post("/login", eBookController.loginUser); // publicLimiter,
+router.post("/login", publicLimiter, eBookController.loginUser); // publicLimiter,
 router.post(
   "/makePurchase",
   verifyToken,
@@ -24,8 +24,13 @@ router.put(
   eBookController.updateUserBalance
 );
 
-router.get("/getPurchasedBooks/:id", eBookController.getPurchasedBooks);
-router.get("/getEbooks", eBookController.getAllBooks);
+router.get("/getEbooks", publicLimiter, eBookController.getAllBooks);
+router.get(
+  "/getPurchasedBooks/:id",
+  verifyToken,
+  userLimiter,
+  eBookController.getPurchasedBooks
+);
 router.get(
   "/getUserBalance/:id",
   verifyToken,
