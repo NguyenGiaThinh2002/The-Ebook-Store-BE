@@ -270,7 +270,6 @@ class EBookController {
           author: true,
           price: true,
           point_price: true, // May not exist in some schemas
-          file_url: true,
           imgUrl: true,
         },
       });
@@ -289,7 +288,6 @@ class EBookController {
             title: true,
             author: true,
             price: true,
-            file_url: true,
             imgUrl: true,
           },
         });
